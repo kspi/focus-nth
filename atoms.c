@@ -13,7 +13,7 @@ static xcb_atom_t get_atom(xcb_connection_t *conn, const char *name, size_t name
 
 
 void atoms_intern(xcb_connection_t *conn) {
-#define DEFATOM(atom) atom = get_atom(conn, #atom, sizeof #atom)
+#define DEFATOM(atom) atom = get_atom(conn, #atom, sizeof #atom - 1)
 #include "atoms.inc"
 #undef DEFATOM
 }
