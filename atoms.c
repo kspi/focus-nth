@@ -14,18 +14,13 @@ static xcb_atom_t get_atom_reply(xcb_connection_t *conn, xcb_intern_atom_cookie_
 
 void atoms_intern(xcb_connection_t *conn) {
     xcb_intern_atom_cookie_t cookies[] = {
-#define DEFATOM(atom) {0},
+#define DEFATOM(atom) xcb_intern_atom(conn, 1, sizeof #atom - 1, #atom),
 #include "atoms.inc"
 #undef DEFATOM
     };
 
-    int i = 0;
-#define DEFATOM(atom) cookies[i] = xcb_intern_atom(conn, 1, sizeof #atom - 1, #atom); ++i;
-#include "atoms.inc"
-#undef DEFATOM
-
-    i = 0;
-#define DEFATOM(atom) atom = get_atom_reply(conn, cookies[i]); ++i;
+    xcb_intern_atom_cookie_t *cookie = cookies;
+#define DEFATOM(atom) atom = get_atom_reply(conn, *cookie++);
 #include "atoms.inc"
 #undef DEFATOM
 }
