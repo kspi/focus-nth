@@ -1,10 +1,12 @@
-all: irssi-focus irssi-focus-2
+PACKAGES = xcb
 
-irssi-focus: irssi-focus..1.c
-	gcc -Wall -pedantic -o $@ $^ -lX11 $(shell pkg-config --cflags --libs glib-2.0) -Os -fno-strict-aliasing -fomit-frame-pointer
+CFLAGS = $(shell pkg-config --cflags $(PACKAGES)) -Wall -Wextra -std=c99 -pedantic -g
+LDFLAGS = $(shell pkg-config --libs $(PACKAGES))
 
-irssi-focus-2: irssi-focus.c
-	gcc -Wall -std=c99 -pedantic -o $@ $^ $(shell pkg-config --cflags --libs xcb) -g
+all: irssi-focus
+
+irssi-focus: irssi-focus.o atoms.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 clean:
-	rm -f irssi-focus irssi-focus-2
+	rm -f *.o irssi-focus
