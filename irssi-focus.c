@@ -19,7 +19,7 @@ int get_current_desktop(xcb_connection_t *conn, xcb_window_t root_window) {
     xcb_get_property_reply_t *reply = xcb_get_property_reply(conn, cookie, NULL);
     assert(reply);
     assert(xcb_get_property_value_length(reply) > 0);
-    
+
     uint32_t *value = (uint32_t *)xcb_get_property_value(reply);
     int current_desktop = *value;
     free(reply);
@@ -47,7 +47,7 @@ int window_get_desktop(xcb_connection_t *c, xcb_window_t window) {
     xcb_get_property_reply_t *reply = xcb_get_property_reply(c, cookie, NULL);
     if (!reply) return -1;
     assert(xcb_get_property_value_length(reply) > 0);
-    
+
     uint32_t *value = (uint32_t *)xcb_get_property_value(reply);
     int desktop = *value;
     free(reply);
@@ -103,7 +103,7 @@ int window_icon_geometry(xcb_connection_t *c, xcb_window_t w, int geometry[4]) {
     xcb_get_property_reply_t *reply = xcb_get_property_reply(c, cookie, NULL);
     if (!reply) return 0;
     assert(xcb_get_property_value_length(reply) == 4);
-    
+
     int32_t *value = (int32_t *)xcb_get_property_value(reply);
     for (int i = 0; i < 4; ++i) {
         geometry[i] = value[i];
@@ -148,29 +148,13 @@ window_list *get_windows(xcb_connection_t *c, xcb_window_t root_window, int desk
         list->values[list_i].window = w;
         if (!window_icon_geometry(c, w, list->values[list_i].icon_geometry)) continue;
 
-        {
-            xcb_get_property_cookie_t cookie = xcb_get_property(
-                c, 0,
-                w, XCB_ATOM_WM_NAME, XCB_ATOM_STRING,
-                0, -1);
-
-            xcb_get_property_reply_t *reply = xcb_get_property_reply(c, cookie, NULL);
-            if (!reply) return 0;
-            assert(xcb_get_property_value_length(reply) > 0);
-            
-            char *name = (char *)xcb_get_property_value(reply);
-            printf("0x%x: %s\n", w, name);
-            free(reply);
-        }
-
-
         ++list_i;
     }
     list->length = list_i;
     list = (window_list *)realloc(list, sizeof *list + list->length * sizeof(window_info));
 
     free(reply);
-    
+
     return list;
 }
 
@@ -197,8 +181,10 @@ void window_activate(xcb_connection_t *c, xcb_window_t root, xcb_window_t w) {
 
     uint32_t event_mask = XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY;
 
-    (void) xcb_send_event(c, 0, root, event_mask, (const char*) &event);
+    xcb_send_event(c, 0, root, event_mask, (const char*) &event);
+    xcb_flush(c);
 }
+
 
 void help(void) {
     fprintf(stderr, "Usage: irssi-focus <window number>\n");
