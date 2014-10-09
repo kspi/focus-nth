@@ -1,2 +1,7 @@
 *.o
-irssi-focus
+/focus-nth
+
+/Makefile
+/cmake_install.cmake
+/CMakeFiles/
+/CMakeCache.txt

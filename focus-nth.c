@@ -187,7 +187,7 @@ void window_activate(xcb_connection_t *c, xcb_window_t root, xcb_window_t w) {
 
 
 void help(void) {
-    fprintf(stderr, "Usage: irssi-focus <window number>\n");
+    fprintf(stderr, "Usage: focus-nth <window number>\n");
 }
 
 int main(int argc, char **argv) {

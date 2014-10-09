@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 2.8)
+project(focus-nth)
+find_package(PkgConfig)
+pkg_check_modules(XCB xcb REQUIRED)
+add_executable(focus-nth focus-nth.c atoms.c)
+target_link_libraries(focus-nth ${XCB_LIBRARIES})
+list(APPEND CMAKE_C_FLAGS "-Os -std=c99 -g -Wall -Wextra -pedantic ${CMAKE_C_FLAGS}")
