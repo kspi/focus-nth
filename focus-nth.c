@@ -57,6 +57,7 @@ int window_get_desktop(xcb_connection_t *c, xcb_window_t window) {
 }
 
 int window_is_normal(xcb_connection_t *c, xcb_window_t window) {
+    int is_normal = 1;
     {
         xcb_get_property_cookie_t cookie = xcb_get_property(
             c, 0,
@@ -66,12 +67,13 @@ int window_is_normal(xcb_connection_t *c, xcb_window_t window) {
         xcb_get_property_reply_t *reply = xcb_get_property_reply(c, cookie, NULL);
         assert(reply);
 
-        int len = xcb_get_property_value_length(reply);
+        int len = xcb_get_property_value_length(reply) / sizeof(xcb_atom_t);
         xcb_atom_t *state = (xcb_atom_t *)xcb_get_property_value(reply);
-        for (int i = 0; i < len; ++i) {
-            if (state[i] == _NET_WM_STATE_SKIP_TASKBAR) return 0;
+        for (int i = 0; is_normal && i < len; ++i) {
+            if (state[i] == _NET_WM_STATE_SKIP_TASKBAR) is_normal = 0;
         }
         free(reply);
+        if (!is_normal) return 0;
     }
 
     {
@@ -83,13 +85,17 @@ int window_is_normal(xcb_connection_t *c, xcb_window_t window) {
         xcb_get_property_reply_t *reply = xcb_get_property_reply(c, cookie, NULL);
         assert(reply);
 
-        int len = xcb_get_property_value_length(reply);
+        int len = xcb_get_property_value_length(reply) / sizeof(xcb_atom_t);
         xcb_atom_t *type = (xcb_atom_t *)xcb_get_property_value(reply);
-        for (int i = 0; i < len; ++i) {
-            if (type[i] == _NET_WM_WINDOW_TYPE_DESKTOP) return 0;
-            if (type[i] == _NET_WM_WINDOW_TYPE_DOCK) return 0;
+        for (int i = 0; is_normal && i < len; ++i) {
+            if (type[i] == _NET_WM_WINDOW_TYPE_DESKTOP
+                || type[i] == _NET_WM_WINDOW_TYPE_DOCK)
+            {
+                is_normal = 0;
+            }
         }
         free(reply);
+        if (!is_normal) return 0;
     }
 
     return 1;
