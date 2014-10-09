@@ -184,7 +184,7 @@ void window_activate(xcb_connection_t *c, xcb_window_t root, xcb_window_t w) {
     event.data.data32[1] = XCB_CURRENT_TIME;
     event.data.data32[2] = 0;
     event.data.data32[3] = 0;
-    event.data.data32[3] = 0;
+    event.data.data32[4] = 0;
 
     uint32_t event_mask = XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY;
 
