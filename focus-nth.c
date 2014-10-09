@@ -1,10 +1,11 @@
-#include <xcb/xcb.h>
+#include <assert.h>
+#include <errno.h>
+#include <limits.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
-#include <assert.h>
-#include <stdint.h>
+#include <xcb/xcb.h>
 
 #include "atoms.h"
 
@@ -186,21 +187,37 @@ void window_activate(xcb_connection_t *c, xcb_window_t root, xcb_window_t w) {
 }
 
 
-void help(void) {
-    fprintf(stderr, "Usage: focus-nth <window number>\n");
+void help(char *app) {
+    fprintf(stderr, "Usage: %s <window number>\n", app);
 }
 
 int main(int argc, char **argv) {
-    if (argc < 2) {
-        help();
+    char *app = argv[0];
+    char **args = argv + 1;
+    char args_len = argc - 1;
+
+    if (args_len == 0 || (args_len == 1 && 0 == strcmp(args[0], "-h"))) {
+        help(app);
         return 1;
     }
 
     errno = 0;
-    long window_num = strtol(argv[1], NULL, 10);
+    char *endptr;
+    char *window_num_str = args[0];
+    long window_num = strtol(window_num_str, &endptr, 10);
     if (errno) {
-        perror("strtol");
-        help();
+        perror("Bad window number");
+        help(app);
+        return 1;
+    }
+    if (endptr == window_num_str) {
+        fprintf(stderr, "No digits in window number\n");
+        help(app);
+        return 1;
+    }
+    if (window_num < 0 || window_num > INT_MAX) {
+        fprintf(stderr, "Window number should be non-negative and not greater than %d\n", INT_MAX);
+        help(app);
         return 1;
     }
 
@@ -219,8 +236,9 @@ int main(int argc, char **argv) {
     window_list *windows = get_windows(connection, root_window, desktop);
     qsort(windows->values, windows->length, sizeof *windows->values, window_info_compare);
 
-    assert((unsigned long) window_num < windows->length);
-    window_activate(connection, root_window, windows->values[window_num].window);
+    if ((unsigned long) window_num < windows->length) {
+        window_activate(connection, root_window, windows->values[window_num].window);
+    }
 
     free(windows);
 
