@@ -98,12 +98,12 @@ int window_is_normal(xcb_connection_t *c, xcb_window_t window) {
 int window_icon_geometry(xcb_connection_t *c, xcb_window_t w, int geometry[4]) {
     xcb_get_property_cookie_t cookie = xcb_get_property(
         c, 0,
-        w, _NET_WM_DESKTOP, XCB_ATOM_CARDINAL,
-        0, 2);
+        w, _NET_WM_ICON_GEOMETRY, XCB_ATOM_CARDINAL,
+        0, 4);
 
     xcb_get_property_reply_t *reply = xcb_get_property_reply(c, cookie, NULL);
     if (!reply) return 0;
-    assert(xcb_get_property_value_length(reply) == 4);
+    assert(xcb_get_property_value_length(reply) == 4 * 4);
 
     int32_t *value = (int32_t *)xcb_get_property_value(reply);
     for (int i = 0; i < 4; ++i) {
